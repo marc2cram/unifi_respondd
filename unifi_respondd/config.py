@@ -5,6 +5,7 @@ import os
 from typing import List, Dict, Any, Union, Optional
 import dataclasses
 import sys
+import ipaddress
 
 UNIFI_RESPONDD_CONFIG_OS_ENV = "UNIFI_RESPONDD_CONFIG_FILE"
 UNIFI_RESPONDD_CONFIG_DEFAULT_LOCATION = "./unifi_respondd.yaml"
@@ -33,7 +34,11 @@ class Config:
     username: str
     password: str
     ssid_regex: str
-    offloader_mac: Dict[str, str]
+    """ M2M Begin """
+    """offloader_mac: Dict[str, str]"""
+    domain: str
+    network: ipaddress.ip_network
+    """ M2M End """
     nodelist: str
 
     multicast_address: str
@@ -44,7 +49,7 @@ class Config:
     verbose: bool = False
     multicast_enabled: bool = True
 
-    version: str = "v5"
+    version: str = "v5.01"
     ssl_verify: bool = True
 
     @classmethod
@@ -62,7 +67,11 @@ class Config:
             username=cfg["username"],
             password=cfg["password"],
             ssid_regex=cfg["ssid_regex"],
-            offloader_mac=cfg["offloader_mac"],
+            """ M2M Begin """
+            """offloader_mac=cfg["offloader_mac"],"""
+            domain=cfg["domain"],
+            network=cfg["network"],
+            """ M2M End """
             nodelist=cfg["nodelist"],
             version=cfg["version"],
             ssl_verify=cfg["ssl_verify"],
@@ -123,3 +132,4 @@ def fetch_config_from_disk() -> str:
         raise ConfigFileNotFoundError(
             f"Could not locate configuration file in {config_file}"
         ) from e
+
