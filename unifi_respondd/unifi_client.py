@@ -10,9 +10,13 @@ from unifi_respondd import logger
 import time
 import dataclasses
 import re
+import json
+import ipaddress
 
 
 ffnodes = None
+client_contact = ""
+client_ctrl_mac = ""
 
 
 @dataclasses.dataclass
@@ -141,10 +145,19 @@ def get_infos():
         aps_for_site = c.get_aps()
         clients = c.get_clients()
         for ap in aps_for_site:
+            """M2M Begin"""
+            """logger.debug("Debug: ### m2m ### nodes ###" + json.dumps(ap, indent=4))"""
+            node_contact = ""
+            node_ctrl_mac = ""
+            """M2M End"""
             if (
                 ap.get("name", None) is not None
                 and ap.get("state", 0) != 0
                 and ap.get("type", "na") == "uap"
+            """M2M Begin"""
+                and ipaddress.ip_address(ap.get("ip", "0.0.0.0")) in cfg.network
+                and "<offloader" in str(ap.get("snmp_contact", None)).lower()
+            """M2M End"""                
             ):
                 ssids = ap.get("vap_table", None)
                 containsSSID = False
@@ -164,6 +177,10 @@ def get_infos():
                     ) = get_client_count_for_ap(ap.get("mac", None), clients, cfg)
                     lat, lon = 0, 0
                     neighbour_macs = []
+                    """M2M Begin"""
+                    node_contact = ap.get("snmp_contact", None)
+                    node_ilist = re.split('[\=\>]', node_contact) 
+                    """logger.debug("#####M2M##### client_iList==> " + str(client_ilist))"""
                     if ap.get("snmp_location", None) is not None:
                         try:
                             lat, lon = get_location_by_address(
@@ -172,17 +189,33 @@ def get_infos():
                         except:
                             pass
                     try:
-                        neighbour_macs.append(cfg.offloader_mac.get(site["desc"], None))
-                        offloader_id = cfg.offloader_mac.get(site["desc"], "").replace(
-                            ":", ""
-                        )
-                        offloader = list(
-                            filter(
-                                lambda x: x["mac"]
-                                == cfg.offloader_mac.get(site["desc"], ""),
-                                ffnodes["nodes"],
-                            )
-                        )[0]
+                        """logger.debug("#####M2M##### try ==> " + client_contact.lower())"""
+                        if "<offloader" in str(node_contact.lower()):
+                            node_ilist = re.split('[\=\>]', node_contact) 
+                            offloader_id = node_ilist[1].strip().replace(":", "")
+                            node_contact = node_ilist[2].strip()
+                            node_ctrl_mac = node_ilist[1].strip()
+                            neighbour_macs.append(str(node_ctrl_mac))
+                            offloader = list(
+                                filter(
+                                    lambda x: x["mac"]
+                                    == node_ctrl_mac,
+                                    ffnodes["nodes"],
+                                )
+                            )[0]
+                        else:
+                            logger.debug("#####M2M##### ELSE!!!")
+                            """neighbour_macs.append(cfg.offloader_mac.get(site["desc"], None))"""
+                            offloader_id = None
+                            offloader = {}
+                            """offloader = list(
+                                filter(
+                                    lambda x: x["mac"]
+                                    == cfg.offloader_mac.get(site["desc"], ""),
+                                    ffnodes["nodes"],
+                                )
+                            )[0]"""
+                        """M2M end"""
                     except:
                         offloader_id = None
                         offloader = {}
@@ -208,7 +241,9 @@ def get_infos():
                             model=ap.get("model", None),
                             firmware=ap.get("version", None),
                             uptime=ap.get("uptime", None),
-                            contact=ap.get("snmp_contact", None),
+                            """M2M Begin"""
+                            contact=node_contact,
+                            """M2M End"""
                             load_avg=float(
                                 ap.get("sys_stats", {}).get("loadavg_1", 0.0)
                             ),
@@ -221,9 +256,9 @@ def get_infos():
                             gateway6=offloader.get("gateway6", None),
                             gateway_nexthop=offloader_id,
                             neighbour_macs=neighbour_macs,
-                            domain_code=offloader.get(
-                                "domain", "ffmuc_unifi_respondd_fallback"
-                            ),
+                            """M2M Begin"""
+                            domain_code=cfg.domain,
+                            """M2M End"""
                         )
                     )
     return aps
