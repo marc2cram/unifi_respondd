@@ -319,7 +319,7 @@ class ResponddClient:
 
     def listenMulticast(self):
         msg, sourceAddress = self._sock.recvfrom(2048)
-        logger.info("Using multicast method")
+        logger.info("Domain: " + cfg.domain + " - Using multicast method")
         msgSplit = str(msg, "UTF-8").split(" ")
 
         return msgSplit, sourceAddress
@@ -391,14 +391,14 @@ class ResponddClient:
         elif responseType == "neighbours":
             responseClass = self._neighbours
         else:
-            logger.warning("unknown command: " + responseType)
+            logger.warning("Domain: " + cfg.domain + " - unknown command: " + responseType)
             return
 
         return responseClass
 
     def sendStruct(self, destAddress, responseStruct, withCompression):
         """This method sends the response structure to the respondd server."""
-        logger.debug(
+        logger.debug("Domain: " + cfg.domain + " - " +
             str(destAddress[0]) + " " + str(destAddress[1]) + " " + str(responseStruct)
         )
 
@@ -408,7 +408,7 @@ class ResponddClient:
             for key, info in infos.items():
                 node.update({key: info.to_dict()})
             responseData = bytes(json.dumps(node), "UTF-8")
-            logger.info(str(responseData))
+            logger.info("Domain: " + cfg.domain + " - " + str(responseData))
 
             if withCompression:
                 encoder = zlib.compressobj(
