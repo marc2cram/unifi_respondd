@@ -228,39 +228,40 @@ def get_infos():
                         for lldp_entry in lldp_table:
                             if not lldp_entry.get("is_wired", True):
                                 neighbour_macs.append(lldp_entry.get("chassis_id"))
-                    aps.accesspoints.append(
-                        Accesspoint(
-                            name=ap.get("name", None),
-                            mac=ap.get("mac", None),
-                            snmp_location=ap.get("snmp_location", None),
-                            client_count=client_count,
-                            client_count24=client_count24,
-                            client_count5=client_count5,
-                            latitude=float(lat),
-                            longitude=float(lon),
-                            model=ap.get("model", None),
-                            firmware=ap.get("version", None),
-                            uptime=ap.get("uptime", None),
-                            """M2M Begin"""
-                            contact=node_contact,
-                            """M2M End"""
-                            load_avg=float(
-                                ap.get("sys_stats", {}).get("loadavg_1", 0.0)
-                            ),
-                            mem_used=ap.get("sys_stats", {}).get("mem_used", 0),
-                            mem_buffer=ap.get("sys_stats", {}).get("mem_buffer", 0),
-                            mem_total=ap.get("sys_stats", {}).get("mem_total", 0),
-                            tx_bytes=tx,
-                            rx_bytes=rx,
-                            gateway=offloader.get("gateway", None),
-                            gateway6=offloader.get("gateway6", None),
-                            gateway_nexthop=offloader_id,
-                            neighbour_macs=neighbour_macs,
-                            """M2M Begin"""
-                            domain_code=cfg.domain,
-                            """M2M End"""
+                    if offloader.get("domain", None) is not None and offloader.get("domain", None) == cfg.domain:
+                        aps.accesspoints.append(
+                            Accesspoint(
+                                name=ap.get("name", None),
+                                mac=ap.get("mac", None),
+                                snmp_location=ap.get("snmp_location", None),
+                                client_count=client_count,
+                                client_count24=client_count24,
+                                client_count5=client_count5,
+                                latitude=float(lat),
+                                longitude=float(lon),
+                                model=ap.get("model", None),
+                                firmware=ap.get("version", None),
+                                uptime=ap.get("uptime", None),
+                                """M2M Begin"""
+                                contact=node_contact,
+                                """M2M End"""
+                                load_avg=float(
+                                    ap.get("sys_stats", {}).get("loadavg_1", 0.0)
+                                ),
+                                mem_used=ap.get("sys_stats", {}).get("mem_used", 0),
+                                mem_buffer=ap.get("sys_stats", {}).get("mem_buffer", 0),
+                                mem_total=ap.get("sys_stats", {}).get("mem_total", 0),
+                                tx_bytes=tx,
+                                rx_bytes=rx,
+                                gateway=offloader.get("gateway", None),
+                                gateway6=offloader.get("gateway6", None),
+                                gateway_nexthop=offloader_id,
+                                neighbour_macs=neighbour_macs,
+                                """M2M Begin"""
+                                domain_code=offloader.get("domain", None),
+                                """M2M End"""
+                            )
                         )
-                    )
     return aps
 
 
