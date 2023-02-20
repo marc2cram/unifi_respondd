@@ -10,6 +10,7 @@ import dataclasses
 from dataclasses_json import dataclass_json
 from unifi_respondd import unifi_client
 from unifi_respondd import logger
+from unifi_respondd import config
 from typing import List, Dict
 
 
