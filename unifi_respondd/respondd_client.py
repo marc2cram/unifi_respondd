@@ -319,6 +319,7 @@ class ResponddClient:
         return neighbours
 
     def listenMulticast(self):
+        cfg = config.Config.from_dict(config.load_config())
         msg, sourceAddress = self._sock.recvfrom(2048)
         logger.info("Domain: " + cfg.domain + " - Using multicast method")
         msgSplit = str(msg, "UTF-8").split(" ")
@@ -326,15 +327,17 @@ class ResponddClient:
         return msgSplit, sourceAddress
 
     def sendUnicast(self):
-        logger.info("Using unicast method")
+        cfg = config.Config.from_dict(config.load_config())
+        logger.info("Domain: " + cfg.domain + " - Using unicast method")
 
         timeSleep = int(60 - (self._timeStop - self._timeStart) % 60)
         if self._config.verbose:
-            logger.debug("will now sleep " + str(timeSleep) + " seconds")
+            logger.debug("Domain: " + cfg.domain + " - will now sleep " + str(timeSleep) + " seconds")
         time.sleep(timeSleep)
 
     def start(self):
         """This method starts the respondd client."""
+        cfg = config.Config.from_dict(config.load_config())
         self._sock.setsockopt(
             socket.SOL_SOCKET,
             socket.SO_BINDTODEVICE,
@@ -399,17 +402,17 @@ class ResponddClient:
 
     def sendStruct(self, destAddress, responseStruct, withCompression):
         """This method sends the response structure to the respondd server."""
-        logger.debug("Domain: " + cfg.domain + " - " +
-            str(destAddress[0]) + " " + str(destAddress[1]) + " " + str(responseStruct)
-        )
+        cfg = config.Config.from_dict(config.load_config())
 
         merged = self.merge_node(responseStruct)
+        counter = 0
         for infos in merged.values():
             node = {}
             for key, info in infos.items():
                 node.update({key: info.to_dict()})
             responseData = bytes(json.dumps(node), "UTF-8")
-            logger.info("Domain: " + cfg.domain + " - " + str(responseData))
+            counter += 1
+            """logger.info("Domain: " + cfg.domain + " - " + str(responseData))"""
 
             if withCompression:
                 encoder = zlib.compressobj(
@@ -419,3 +422,4 @@ class ResponddClient:
                 responseData += encoder.flush()
 
             self._sock.sendto(responseData, destAddress)
+        logger.info("Domain: " + cfg.domain + " - " + "Number of records: " + str(counter))
