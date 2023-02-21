@@ -34,11 +34,8 @@ class Config:
     username: str
     password: str
     ssid_regex: str
-    """ M2M Begin """
-    """offloader_mac: Dict[str, str]"""
     domain: str
     network: ipaddress.ip_network
-    """ M2M End """
     nodelist: str
 
     multicast_address: str
@@ -67,11 +64,8 @@ class Config:
             username=cfg["username"],
             password=cfg["password"],
             ssid_regex=cfg["ssid_regex"],
-            """ M2M Begin """
-            """offloader_mac=cfg["offloader_mac"],"""
             domain=cfg["domain"],
             network=cfg["network"],
-            """ M2M End """
             nodelist=cfg["nodelist"],
             version=cfg["version"],
             ssl_verify=cfg["ssl_verify"],
