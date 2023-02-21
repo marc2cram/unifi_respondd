@@ -145,20 +145,17 @@ def get_infos():
         aps_for_site = c.get_aps()
         clients = c.get_clients()
         for ap in aps_for_site:
-            """M2M Begin"""
             """logger.debug("Debug: ### m2m ### nodes ###" + json.dumps(ap, indent=4))"""
             node_contact = ""
             node_ctrl_mac = ""
-            """M2M End"""
             if (
                 ap.get("name", None) is not None
                 and ap.get("state", 0) != 0
                 and ap.get("type", "na") == "uap"
-            """M2M Begin"""
-                and ipaddress.ip_address(ap.get("ip", "0.0.0.0")) in cfg.network
+                and ipaddress.ip_address(ap.get("ip", "0.0.0.0")) in ipaddress.ip_network(cfg.network, "0.0.0.0/20")
                 and "<offloader" in str(ap.get("snmp_contact", None)).lower()
-            """M2M End"""                
             ):
+                """logger.debug("Debug: ### m2m ### nodes ###" + json.dumps(ap, indent=4))"""
                 ssids = ap.get("vap_table", None)
                 containsSSID = False
                 tx = 0
@@ -228,6 +225,8 @@ def get_infos():
                         for lldp_entry in lldp_table:
                             if not lldp_entry.get("is_wired", True):
                                 neighbour_macs.append(lldp_entry.get("chassis_id"))
+                    
+                    """logger.debug("#####M2M##### ==> cfg-domain: " + cfg.domain + " - ofl-domain: " + offloader.get("domain", None))"""
                     if offloader.get("domain", None) is not None and offloader.get("domain", None) == cfg.domain:
                         aps.accesspoints.append(
                             Accesspoint(
@@ -242,9 +241,7 @@ def get_infos():
                                 model=ap.get("model", None),
                                 firmware=ap.get("version", None),
                                 uptime=ap.get("uptime", None),
-                                """M2M Begin"""
                                 contact=node_contact,
-                                """M2M End"""
                                 load_avg=float(
                                     ap.get("sys_stats", {}).get("loadavg_1", 0.0)
                                 ),
@@ -257,9 +254,7 @@ def get_infos():
                                 gateway6=offloader.get("gateway6", None),
                                 gateway_nexthop=offloader_id,
                                 neighbour_macs=neighbour_macs,
-                                """M2M Begin"""
                                 domain_code=offloader.get("domain", None),
-                                """M2M End"""
                             )
                         )
     return aps
